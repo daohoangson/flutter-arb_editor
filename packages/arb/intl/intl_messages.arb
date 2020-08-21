@@ -1,0 +1,88 @@
+{
+  "@@last_modified": "2020-08-21T11:07:16.580093",
+  "message": "message",
+  "@message": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {}
+  },
+  "messageWithArg": "arg={arg}",
+  "@messageWithArg": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "arg": {
+        "example": "foo"
+      }
+    }
+  },
+  "gender": "{gender,select, female{gender=female}male{gender=male}other{gender=other}}",
+  "@gender": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "gender": {
+        "example": "female"
+      }
+    }
+  },
+  "genderWithArg": "{gender,select, female{gender=female arg={arg}}male{gender=male arg={arg}}other{gender=other arg={arg}}}",
+  "@genderWithArg": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "gender": {
+        "example": "female"
+      },
+      "arg": {
+        "example": "foo"
+      }
+    }
+  },
+  "plural": "{n,plural, =0{n=zero}=1{n=one}=2{n=two}few{n=few}many{n=many}other{n=other}}",
+  "@plural": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "n": {
+        "example": 1
+      }
+    }
+  },
+  "pluralWithArg": "{n,plural, =0{n=zero arg={arg}}=1{n=one arg={arg}}=2{n=two arg={arg}}few{n=few arg={arg}}many{n=many arg={arg}}other{n=other arg={arg}}}",
+  "@pluralWithArg": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "n": {
+        "example": 1
+      },
+      "arg": {
+        "example": "foo"
+      }
+    }
+  },
+  "select": "{choice,select, foo{choice=foo}bar{choice=bar}}",
+  "@select": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "choice": {
+        "example": "foo"
+      }
+    }
+  },
+  "selectWithArg": "{choice,select, foo{choice=foo arg={arg}}bar{choice=bar arg={arg}}}",
+  "@selectWithArg": {
+    "description": "desc",
+    "type": "text",
+    "placeholders": {
+      "choice": {
+        "example": "foo"
+      },
+      "arg": {
+        "example": "bar"
+      }
+    }
+  }
+}
