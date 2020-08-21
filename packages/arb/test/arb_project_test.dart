@@ -23,7 +23,7 @@ void main() {
       final viFile = ArbFile(locale: 'vi', messages: [viMessageFoo]);
       expect(viFoo.translations['vi'], equals('barrrr'));
 
-      final arbProject = ArbProject([enFile, viFile]);
+      final arbProject = ArbProject.fromFile([enFile, viFile]);
       expect(arbProject.files.length, equals(2));
       expect(arbProject.metadata.entries.length, equals(1));
 

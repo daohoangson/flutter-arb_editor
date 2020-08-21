@@ -21,6 +21,13 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  arb:
+    path: ./packages/arb
+  file_chooser:
+    git:
+      url: git://github.com/google/flutter-desktop-embedding.git
+      path: plugins/file_chooser
+      ref: 1feed8db2e5222af4e5d8495ac45135a2701c755
   flutter:
     sdk: flutter
 

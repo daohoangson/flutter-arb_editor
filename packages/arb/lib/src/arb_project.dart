@@ -9,10 +9,25 @@ import 'arb_file.dart';
 class ArbProject {
   final Map<String, dynamic> errors;
   final List<ArbFile> files;
+  final List<MainMessage> messages;
   final Map<String, MainMessage> metadata;
 
-  ArbProject(this.files, {this.errors})
-      : metadata = _collectMetadataFromFiles(files);
+  ArbProject({this.errors, this.files, this.messages, this.metadata});
+
+  factory ArbProject.fromFile(List<ArbFile> files,
+      {Map<String, dynamic> errors}) {
+    final metadata = _collectMetadataFromFiles(files);
+
+    final messages = metadata.values.toList();
+    messages.sort((a, b) => a.name.compareTo(b.name));
+
+    return ArbProject(
+      errors: errors,
+      files: files,
+      messages: messages,
+      metadata: metadata,
+    );
+  }
 
   static Future<ArbProject> fromDirectory(Directory dir) async {
     final futures = <Future<ArbFile>>[];
@@ -28,7 +43,7 @@ class ArbProject {
     }
 
     final arbFiles = await Future.wait(futures);
-    return ArbProject(arbFiles, errors: errors);
+    return ArbProject.fromFile(arbFiles, errors: errors);
   }
 }
 
