@@ -28,7 +28,7 @@ class ArbFile {
 
     DateTime lastModified;
     String locale;
-    final metadata = <String, MainMessage>{};
+    final allMetadata = <String, MainMessage>{};
     final messages = <ArbMessage>[];
 
     for (final entry in data.entries) {
@@ -46,11 +46,11 @@ class ArbFile {
         default:
           if (entry.key.startsWith('@')) {
             if (entry.value is Map) {
-              final message = MainMessage();
-              message.arguments = [];
-              message.description = entry.value['description'];
-              message.examples = {};
-              message.name = entry.key.substring(1);
+              final metadata = MainMessage();
+              metadata.arguments = [];
+              metadata.description = entry.value['description'];
+              metadata.examples = {};
+              metadata.name = entry.key.substring(1);
 
               final placeholders = entry.value['placeholders'];
               if (placeholders is Map) {
@@ -58,12 +58,12 @@ class ArbFile {
                   final arg = placeholder.key;
                   final example = placeholder.value['example'];
 
-                  message.arguments.add(arg);
-                  message.examples[arg] = example;
+                  metadata.arguments.add(arg);
+                  metadata.examples[arg] = example;
                 }
               }
 
-              metadata[message.name] = message;
+              allMetadata[metadata.name] = metadata;
             }
           } else {
             // translation
@@ -71,7 +71,7 @@ class ArbFile {
             if (parsed is LiteralString && parsed.string.isEmpty) {
               parsed = _plainParser.parse(entry.value).value;
             }
-            messages.add(ArbMessage(metadata, entry.key, parsed));
+            messages.add(ArbMessage(allMetadata, entry.key, parsed));
           }
       }
     }
@@ -84,7 +84,7 @@ class ArbFile {
     locale ??= '';
 
     for (final message in messages) {
-      message.metadata?.addTranslation(locale, message.message);
+      message.metadata?.addTranslation(locale, message.translated);
     }
 
     return ArbFile(
@@ -100,10 +100,13 @@ class ArbFile {
 }
 
 class ArbMessage extends TranslatedMessage {
-  final Map<String, MainMessage> _metadata;
+  final Map<String, MainMessage> _allMetadata;
 
-  ArbMessage(this._metadata, String name, Message translated)
+  MainMessage _metadata;
+
+  ArbMessage(this._allMetadata, String name, Message translated)
       : super(name, translated);
 
-  MainMessage get metadata => _metadata[id];
+  MainMessage get metadata => _metadata ?? _allMetadata[id];
+  set metadata(MainMessage v) => _metadata = v;
 }

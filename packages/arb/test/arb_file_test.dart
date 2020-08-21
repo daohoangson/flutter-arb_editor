@@ -42,8 +42,8 @@ void main() {
         final message = arbFile.messages.first;
 
         expect(message.id, equals('foo'));
-        expect(message.message, isA<LiteralString>());
-        expect('${message.message}', equals('Literal(Bar)'));
+        expect(message.translated, isA<LiteralString>());
+        expect('${message.translated}', equals('Literal(Bar)'));
       });
 
       test('parses placeholder', () {
@@ -60,9 +60,9 @@ void main() {
         final message = arbFile.messages.first;
 
         expect(message.id, equals('hello'));
-        expect(message.message, isA<CompositeMessage>());
+        expect(message.translated, isA<CompositeMessage>());
         expect(
-            message.message.toString(),
+            message.translated.toString(),
             equals('CompositeMessage([Literal(Hello ), '
                 'VariableSubstitution(0)])'));
       });
@@ -81,9 +81,9 @@ void main() {
         final message = arbFile.messages.first;
 
         expect(message.id, equals('apples'));
-        expect(message.message, isA<Plural>());
+        expect(message.translated, isA<Plural>());
         expect(
-            message.message.toString(),
+            message.translated.toString(),
             equals('{n,plural, '
                 '=1{Literal(an apple)}'
                 'other{CompositeMessage([VariableSubstitution(0), Literal( apples)])}'
@@ -97,9 +97,9 @@ void main() {
         final message = arbFile.messages.first;
 
         expect(message.id, equals('fooOrBar'));
-        expect(message.message, isA<Select>());
+        expect(message.translated, isA<Select>());
         expect(
-            message.message.toString(),
+            message.translated.toString(),
             equals('{choice,select, '
                 'foo{Literal(Foo is great!)}'
                 'bar{Literal(Bar is awesome!)}'

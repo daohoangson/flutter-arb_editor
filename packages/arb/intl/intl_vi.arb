@@ -1,12 +1,12 @@
 {
   "@@last_modified": "2020-08-21T11:07:16.580093",
-  "message": "message",
+  "message": "nội dung",
   "@message": {
     "description": "desc",
     "type": "text",
     "placeholders": {}
   },
-  "messageWithArg": "arg={arg}",
+  "messageWithArg": "tham số={arg}",
   "@messageWithArg": {
     "description": "desc",
     "type": "text",
@@ -16,7 +16,7 @@
       }
     }
   },
-  "gender": "{gender,select, female{gender=female}male{gender=male}other{gender=other}}",
+  "gender": "{gender,select, female{gender=nữ}male{gender=nam}other{gender=khác}}",
   "@gender": {
     "description": "desc",
     "type": "text",
@@ -26,7 +26,7 @@
       }
     }
   },
-  "genderWithArg": "{gender,select, female{gender=female arg={arg}}male{gender=male arg={arg}}other{gender=other arg={arg}}}",
+  "genderWithArg": "{gender,select, female{gender=nữ tham số={arg}}male{gender=nam tham số={arg}}other{gender=khác tham số={arg}}}",
   "@genderWithArg": {
     "description": "desc",
     "type": "text",
@@ -39,7 +39,7 @@
       }
     }
   },
-  "plural": "{n,plural, =0{n=zero}=1{n=one}=2{n=two}few{n=few}many{n=many}other{n=other}}",
+  "plural": "{n,plural, =0{n=không}=1{n=một}=2{n=hai}few{n=một vài}many{n=nhiều}other{n=khác}}",
   "@plural": {
     "description": "desc",
     "type": "text",
@@ -49,7 +49,7 @@
       }
     }
   },
-  "pluralWithArg": "{n,plural, =0{n=zero arg={arg}}=1{n=one arg={arg}}=2{n=two arg={arg}}few{n=few arg={arg}}many{n=many arg={arg}}other{n=other arg={arg}}}",
+  "pluralWithArg": "{n,plural, =0{n=không tham số={arg}}=1{n=một tham số={arg}}=2{n=hai tham số={arg}}few{n=một vài tham số={arg}}many{n=nhiều tham số={arg}}other{n=khác tham số={arg}}}",
   "@pluralWithArg": {
     "description": "desc",
     "type": "text",
@@ -62,7 +62,7 @@
       }
     }
   },
-  "select": "{choice,select, foo{choice=foo}bar{choice=bar}}",
+  "select": "{choice,select, foo{chọn=foo}bar{chọn=bar}}",
   "@select": {
     "description": "desc",
     "type": "text",
@@ -72,7 +72,7 @@
       }
     }
   },
-  "selectWithArg": "{choice,select, foo{choice=foo arg={arg}}bar{choice=bar arg={arg}}}",
+  "selectWithArg": "{choice,select, foo{chọn=foo tham số={arg}}bar{chọn=bar tham số={arg}}}",
   "@selectWithArg": {
     "description": "desc",
     "type": "text",
