@@ -27,7 +27,7 @@ void main() {
       expect(arbProject.files.length, equals(2));
       expect(arbProject.length, equals(1));
 
-      final string = arbProject['foo'];
+      final string = arbProject.getString(byName: 'foo');
       expect(string.length, equals(2));
       expect("${string['en']}", equals('bar'));
       expect("${string['vi']}", equals('barrrr'));
@@ -42,7 +42,7 @@ void main() {
     expect(arbProject.localeDefault, equals('en'));
 
     final _expect = (String name, {String en, String vi}) {
-      final string = arbProject[name];
+      final string = arbProject.getString(byName: name);
       expect('${string.original}', equals(en));
       expect("${string['en']}", equals(en));
       expect("${string['vi']}", equals(vi));

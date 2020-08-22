@@ -20,9 +20,11 @@ class ArbProject {
 
   int get length => _list.length;
 
-  ArbString operator [](String name) => _map[name];
-
-  ArbString getStringAt(int index) => _list[index];
+  ArbString getString({int atIndex, String byName}) {
+    assert((atIndex == null) != (byName == null),
+        'Either `atIndex` or `byName` must be specified but not both of them.');
+    return atIndex != null ? _list[atIndex] : _map[byName];
+  }
 
   factory ArbProject.fromFile(List<ArbFile> files,
       {Map<String, dynamic> errors}) {
