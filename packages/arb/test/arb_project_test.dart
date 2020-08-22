@@ -21,9 +21,9 @@ void main() {
 
       final arbProject = ArbProject.fromFile([enFile, viFile]);
       expect(arbProject.files.length, equals(2));
-      expect(arbProject.length, equals(1));
+      expect(arbProject.strings.length, equals(1));
 
-      final string = arbProject.getString(atIndex: 0);
+      final string = arbProject.strings[0];
       expect(string.length, equals(2));
       expect("${string['en']}", equals('bar'));
       expect("${string['vi']}", equals('barrrr'));
@@ -34,11 +34,10 @@ void main() {
     final arbProject = await ArbProject.fromDirectory(Directory('./intl'));
     expect(arbProject.errors, isEmpty);
     expect(arbProject.files.length, equals(3));
-    expect(arbProject.length, equals(8));
-    expect(arbProject.localeDefault, equals('en'));
+    expect(arbProject.strings.length, equals(8));
 
     final _expect = (String name, {String en, String vi}) {
-      final string = arbProject.getString(byName: name);
+      final string = arbProject.getStringByName(name);
       expect('${string.original}', equals(en));
       expect("${string['en']}", equals(en));
       expect("${string['vi']}", equals(vi));
