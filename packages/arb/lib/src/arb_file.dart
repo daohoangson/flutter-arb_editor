@@ -1,35 +1,35 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:intl_translation/generate_localized.dart';
-import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' show basenameWithoutExtension;
 
-const _jsonDecoder = JsonCodec();
-final _pluralAndGenderParser = IcuParser().message;
-final _plainParser = IcuParser().nonIcuMessage;
+import 'internal/icu.dart';
+import 'message.dart';
 
-@immutable
+const _jsonDecoder = JsonCodec();
+
 class ArbFile {
+  final bool isOriginal;
   final DateTime lastModified;
   final String locale;
-  final List<ArbMessage> messages;
+  final List<ArbTranslation> translations;
 
   ArbFile({
+    this.isOriginal = false,
     this.lastModified,
     this.locale,
-    this.messages,
+    this.translations,
   });
 
   factory ArbFile.fromContents(String contents, [String path]) {
     var data = _jsonDecoder.decode(contents) as Map<String, dynamic>;
 
+    var isOriginal = false;
     DateTime lastModified;
     String locale;
-    final allMetadata = <String, MainMessage>{};
-    final messages = <ArbMessage>[];
+    final strings = <String, ArbString>{};
+    final translations = <String, ArbTranslation>{};
 
     for (final entry in data.entries) {
       switch (entry.key) {
@@ -45,12 +45,13 @@ class ArbFile {
           break;
         default:
           if (entry.key.startsWith('@')) {
+            // metadata
             if (entry.value is Map) {
-              final metadata = MainMessage();
-              metadata.arguments = [];
-              metadata.description = entry.value['description'];
-              metadata.examples = {};
-              metadata.name = entry.key.substring(1);
+              final main = MainMessage();
+              main.arguments = [];
+              main.description = entry.value['description'];
+              main.examples = {};
+              main.name = entry.key.substring(1);
 
               final placeholders = entry.value['placeholders'];
               if (placeholders is Map) {
@@ -58,55 +59,50 @@ class ArbFile {
                   final arg = placeholder.key;
                   final example = placeholder.value['example'];
 
-                  metadata.arguments.add(arg);
-                  metadata.examples[arg] = example;
+                  main.arguments.add(arg);
+                  main.examples[arg] = example;
                 }
               }
 
-              allMetadata[metadata.name] = metadata;
+              strings[main.name] = ArbString(main);
             }
           } else {
             // translation
-            Message parsed = _pluralAndGenderParser.parse(entry.value).value;
-            if (parsed is LiteralString && parsed.string.isEmpty) {
-              parsed = _plainParser.parse(entry.value).value;
-            }
-            messages.add(ArbMessage(allMetadata, entry.key, parsed));
+            final translated = fromIcuForm(entry.value);
+            translations[entry.key] = ArbTranslation(translated);
           }
       }
     }
 
     if (locale == null && path != null) {
-      var name = basenameWithoutExtension(path);
-      locale = name.split('_').skip(1).join('_');
+      if (path.endsWith('_messages.arb')) {
+        isOriginal = true;
+      } else {
+        var name = basenameWithoutExtension(path);
+        locale = name.split('_').skip(1).join('_');
+      }
     }
 
-    locale ??= '';
+    for (final translation in translations.entries) {
+      final string = strings[translation.key];
+      if (string == null) continue;
 
-    for (final message in messages) {
-      message.metadata?.addTranslation(locale, message.translated);
+      if (isOriginal) {
+        string.original = translation.value;
+      } else if (locale != null) {
+        string[locale] = translation.value;
+      }
     }
 
     return ArbFile(
+      isOriginal: isOriginal,
       lastModified: lastModified,
       locale: locale,
-      messages: messages,
+      translations: translations.values.toList(growable: false),
     );
   }
 
   static Future<ArbFile> fromFile(File file) => file
       .readAsString()
       .then((contents) => ArbFile.fromContents(contents, file.path));
-}
-
-class ArbMessage extends TranslatedMessage {
-  final Map<String, MainMessage> _allMetadata;
-
-  MainMessage _metadata;
-
-  ArbMessage(this._allMetadata, String name, Message translated)
-      : super(name, translated);
-
-  MainMessage get metadata => _metadata ?? _allMetadata[id];
-  set metadata(MainMessage v) => _metadata = v;
 }
