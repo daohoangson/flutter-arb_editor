@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' show basenameWithoutExtension;
@@ -12,7 +11,6 @@ const _jsonDecoder = JsonCodec();
 final _pluralAndGenderParser = IcuParser().message;
 final _plainParser = IcuParser().nonIcuMessage;
 
-@immutable
 class ArbFile {
   final bool isOriginal;
   final DateTime lastModified;

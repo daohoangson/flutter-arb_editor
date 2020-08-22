@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 import 'arb_file.dart';
 
-@immutable
 class ArbProject {
   final Map<String, dynamic> errors;
   final List<ArbFile> files;
