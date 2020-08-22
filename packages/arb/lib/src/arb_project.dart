@@ -8,10 +8,18 @@ import 'arb_file.dart';
 class ArbProject {
   final Map<String, dynamic> errors;
   final List<ArbFile> files;
+  final String localeDefault;
+
   final List<ArbString> _list;
   final Map<String, ArbString> _map;
 
-  ArbProject(this._list, this._map, {this.errors, this.files});
+  ArbProject(
+    this._list,
+    this._map, {
+    this.errors,
+    this.files,
+    this.localeDefault,
+  });
 
   int get length => _list.length;
 
@@ -31,6 +39,7 @@ class ArbProject {
       map,
       errors: errors,
       files: files,
+      localeDefault: _guessLocaleDefault(list),
     );
   }
 
@@ -83,4 +92,35 @@ Map<String, ArbString> _collectStringsFromFiles(Iterable<ArbFile> files) {
   }
 
   return map;
+}
+
+String _guessLocaleDefault(List<ArbString> strings) {
+  final counts = <String, int>{};
+  for (final string in strings) {
+    final original = string.original?.toCode();
+    if (original == null) continue;
+
+    for (final locale in string.locales) {
+      final translation = string[locale].toCode();
+      if (translation == original) {
+        if (counts.containsKey(locale)) {
+          counts[locale] = counts[locale] + 1;
+        } else {
+          counts[locale] = 1;
+        }
+      }
+    }
+  }
+  String localeDefault;
+  int maxValue;
+  if (counts.isNotEmpty) {
+    for (final count in counts.entries) {
+      if (maxValue == null || maxValue < count.value) {
+        localeDefault = count.key;
+        maxValue = count.value;
+      }
+    }
+  }
+
+  return localeDefault;
 }

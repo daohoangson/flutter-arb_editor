@@ -39,6 +39,7 @@ void main() {
     expect(arbProject.errors, isEmpty);
     expect(arbProject.files.length, equals(3));
     expect(arbProject.length, equals(8));
+    expect(arbProject.localeDefault, equals('en'));
 
     final _expect = (String name, {String en, String vi}) {
       final string = arbProject[name];
