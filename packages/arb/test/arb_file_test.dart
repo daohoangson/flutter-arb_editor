@@ -2,10 +2,15 @@ import 'dart:io';
 
 import 'package:arb/arb.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl_translation/src/intl_message.dart';
 
 void main() {
   group('ArbFile', () {
+    test('detects original', () {
+      final contents = '{}';
+      final arbFile = ArbFile.fromContents(contents, 'intl_messages.arb');
+      expect(arbFile.isOriginal, isTrue);
+    });
+
     test('parses @@last_modified', () {
       final d = DateTime.now().subtract(Duration(days: 1));
       final contents = '{"@@last_modified":"${d.toIso8601String()}"}';
@@ -39,11 +44,10 @@ void main() {
       test('parses literal', () {
         final contents = '{"foo": "Bar"}';
         final arbFile = ArbFile.fromContents(contents);
-        final message = arbFile.messages.first;
+        final translation = arbFile.translations.first;
 
-        expect(message.id, equals('foo'));
-        expect(message.translated, isA<LiteralString>());
-        expect('${message.translated}', equals('Literal(Bar)'));
+        expect(translation.name, equals('foo'));
+        expect(translation.toString(), equals('Literal(Bar)'));
       });
 
       test('parses placeholder', () {
@@ -56,13 +60,12 @@ void main() {
             '    }'
             '  }'
             '}';
-        final arbFile = ArbFile.fromContents(contents);
-        final message = arbFile.messages.first;
+        final arbFile = ArbFile.fromContents(contents, 'intl_messages.arb');
+        final translation = arbFile.translations.first;
 
-        expect(message.id, equals('hello'));
-        expect(message.translated, isA<CompositeMessage>());
+        expect(translation.name, equals('hello'));
         expect(
-            message.translated.toString(),
+            translation.toString(),
             equals('CompositeMessage([Literal(Hello ), '
                 'VariableSubstitution(0)])'));
       });
@@ -77,13 +80,12 @@ void main() {
             '  },'
             '  "apples": "{n,plural, =1{an apple}other{{n} apples}}"'
             '}';
-        final arbFile = ArbFile.fromContents(contents);
-        final message = arbFile.messages.first;
+        final arbFile = ArbFile.fromContents(contents, 'intl_messages.arb');
+        final translation = arbFile.translations.first;
 
-        expect(message.id, equals('apples'));
-        expect(message.translated, isA<Plural>());
+        expect(translation.name, equals('apples'));
         expect(
-            message.translated.toString(),
+            translation.toString(),
             equals('{n,plural, '
                 '=1{Literal(an apple)}'
                 'other{CompositeMessage([VariableSubstitution(0), Literal( apples)])}'
@@ -94,12 +96,11 @@ void main() {
         final contents =
             '{"fooOrBar": "{choice,select, foo{Foo is great!}bar{Bar is awesome!}}"}';
         final arbFile = ArbFile.fromContents(contents);
-        final message = arbFile.messages.first;
+        final translation = arbFile.translations.first;
 
-        expect(message.id, equals('fooOrBar'));
-        expect(message.translated, isA<Select>());
+        expect(translation.name, equals('fooOrBar'));
         expect(
-            message.translated.toString(),
+            translation.toString(),
             equals('{choice,select, '
                 'foo{Literal(Foo is great!)}'
                 'bar{Literal(Bar is awesome!)}'
@@ -110,38 +111,38 @@ void main() {
     test('parses file', () async {
       final arbFile = await ArbFile.fromFile(File('./intl/intl_messages.arb'));
       expect(arbFile.lastModified, isNotNull);
-      expect(arbFile.messages, isNotEmpty);
+      expect(arbFile.translations, isNotEmpty);
 
-      final messages = arbFile.messages;
-      expect(messages.length, equals(8));
+      final list = arbFile.translations;
+      expect(list.length, equals(8));
 
-      expect(messages[0].metadata.toString(),
+      expect(list[0].string.toString(),
           equals('Intl.message(, message, desc, {}, [])'));
 
-      expect(messages[1].metadata.toString(),
+      expect(list[1].string.toString(),
           equals('Intl.message(, messageWithArg, desc, {arg: foo}, [arg])'));
 
-      expect(messages[2].metadata.toString(),
+      expect(list[2].string.toString(),
           equals('Intl.message(, gender, desc, {gender: female}, [gender])'));
 
       expect(
-          messages[3].metadata.toString(),
+          list[3].string.toString(),
           equals('Intl.message(, genderWithArg, desc, '
               '{gender: female, arg: foo}, [gender, arg])'));
 
-      expect(messages[4].metadata.toString(),
+      expect(list[4].string.toString(),
           equals('Intl.message(, plural, desc, {n: 1}, [n])'));
 
       expect(
-          messages[5].metadata.toString(),
+          list[5].string.toString(),
           equals('Intl.message(, pluralWithArg, desc, '
               '{n: 1, arg: foo}, [n, arg])'));
 
-      expect(messages[6].metadata.toString(),
+      expect(list[6].string.toString(),
           equals('Intl.message(, select, desc, {choice: foo}, [choice])'));
 
       expect(
-          messages[7].metadata.toString(),
+          list[7].string.toString(),
           equals('Intl.message(, selectWithArg, desc, '
               '{choice: foo, arg: bar}, [choice, arg])'));
     });

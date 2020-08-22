@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:intl_translation/src/intl_message.dart';
 
 import 'arb_file.dart';
 
@@ -9,23 +8,29 @@ import 'arb_file.dart';
 class ArbProject {
   final Map<String, dynamic> errors;
   final List<ArbFile> files;
-  final List<MainMessage> messages;
-  final Map<String, MainMessage> metadata;
+  final List<ArbString> _list;
+  final Map<String, ArbString> _map;
 
-  ArbProject({this.errors, this.files, this.messages, this.metadata});
+  ArbProject(this._list, this._map, {this.errors, this.files});
+
+  int get length => _list.length;
+
+  ArbString operator [](String name) => _map[name];
+
+  ArbString getStringAt(int index) => _list[index];
 
   factory ArbProject.fromFile(List<ArbFile> files,
       {Map<String, dynamic> errors}) {
-    final metadata = _collectMetadataFromFiles(files);
+    final map = _collectStringsFromFiles(files);
 
-    final messages = metadata.values.toList();
-    messages.sort((a, b) => a.name.compareTo(b.name));
+    final list = map.values.toList();
+    list.sort((a, b) => a.name.compareTo(b.name));
 
     return ArbProject(
+      list,
+      map,
       errors: errors,
       files: files,
-      messages: messages,
-      metadata: metadata,
     );
   }
 
@@ -34,7 +39,6 @@ class ArbProject {
     final errors = <String, dynamic>{};
     for (final fse in dir.listSync(recursive: true, followLinks: false)) {
       if (!fse.path.endsWith('.arb')) continue;
-      if (fse.path.endsWith('_messages.arb')) continue;
 
       futures.add(ArbFile.fromFile(File(fse.path)).catchError((error) {
         errors[fse.absolute.path] = error;
@@ -47,22 +51,33 @@ class ArbProject {
   }
 }
 
-Map<String, MainMessage> _collectMetadataFromFiles(Iterable<ArbFile> files) {
-  // ignore: prefer_collection_literals
-  final map = <String, MainMessage>{};
+Map<String, ArbString> _collectStringsFromFiles(Iterable<ArbFile> files) {
+  final map = <String, ArbString>{};
+  final _files = files.where((f) => f != null).toList(growable: false);
+
+  for (final file in _files) {
+    if (!file.isOriginal) continue;
+
+    for (final original in file.translations) {
+      final string = original.string;
+      if (string == null) continue;
+
+      map[string.name] = string;
+    }
+  }
 
   for (final file in files) {
-    if (file == null) continue;
+    if (file.isOriginal) continue;
 
-    for (final message in file.messages) {
-      final metadata = message.metadata;
-      if (metadata == null) continue;
+    for (final translation in file.translations) {
+      final string = translation.string;
+      if (string == null) continue;
 
-      final fromMap = map.putIfAbsent(metadata.name, () => metadata);
-      message.metadata = fromMap;
+      final fromMap = map.putIfAbsent(string.name, () => string);
 
-      if (fromMap != metadata) {
-        fromMap.addTranslation(file.locale, message.translated);
+      if (fromMap != string) {
+        translation.string = fromMap;
+        fromMap[file.locale] = translation;
       }
     }
   }

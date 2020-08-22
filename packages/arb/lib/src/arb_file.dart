@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:intl_translation/generate_localized.dart';
 import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' show basenameWithoutExtension;
@@ -13,23 +12,26 @@ final _plainParser = IcuParser().nonIcuMessage;
 
 @immutable
 class ArbFile {
+  final bool isOriginal;
   final DateTime lastModified;
   final String locale;
-  final List<ArbMessage> messages;
+  final List<ArbTranslation> translations;
 
   ArbFile({
+    this.isOriginal,
     this.lastModified,
     this.locale,
-    this.messages,
+    this.translations,
   });
 
   factory ArbFile.fromContents(String contents, [String path]) {
     var data = _jsonDecoder.decode(contents) as Map<String, dynamic>;
 
+    var isOriginal = false;
     DateTime lastModified;
     String locale;
-    final allMetadata = <String, MainMessage>{};
-    final messages = <ArbMessage>[];
+    final strings = <String, ArbString>{};
+    final translations = <ArbTranslation>[];
 
     for (final entry in data.entries) {
       switch (entry.key) {
@@ -46,11 +48,11 @@ class ArbFile {
         default:
           if (entry.key.startsWith('@')) {
             if (entry.value is Map) {
-              final metadata = MainMessage();
-              metadata.arguments = [];
-              metadata.description = entry.value['description'];
-              metadata.examples = {};
-              metadata.name = entry.key.substring(1);
+              final main = MainMessage();
+              main.arguments = [];
+              main.description = entry.value['description'];
+              main.examples = {};
+              main.name = entry.key.substring(1);
 
               final placeholders = entry.value['placeholders'];
               if (placeholders is Map) {
@@ -58,12 +60,12 @@ class ArbFile {
                   final arg = placeholder.key;
                   final example = placeholder.value['example'];
 
-                  metadata.arguments.add(arg);
-                  metadata.examples[arg] = example;
+                  main.arguments.add(arg);
+                  main.examples[arg] = example;
                 }
               }
 
-              allMetadata[metadata.name] = metadata;
+              strings[main.name] = ArbString(main);
             }
           } else {
             // translation
@@ -71,26 +73,36 @@ class ArbFile {
             if (parsed is LiteralString && parsed.string.isEmpty) {
               parsed = _plainParser.parse(entry.value).value;
             }
-            messages.add(ArbMessage(allMetadata, entry.key, parsed));
+            translations.add(ArbTranslation(strings, entry.key, parsed));
           }
       }
     }
 
     if (locale == null && path != null) {
-      var name = basenameWithoutExtension(path);
-      locale = name.split('_').skip(1).join('_');
+      if (path.endsWith('_messages.arb')) {
+        isOriginal = true;
+      } else {
+        var name = basenameWithoutExtension(path);
+        locale = name.split('_').skip(1).join('_');
+      }
     }
 
-    locale ??= '';
-
-    for (final message in messages) {
-      message.metadata?.addTranslation(locale, message.translated);
+    for (final translation in translations) {
+      final string = translation.string;
+      if (string != null) {
+        if (isOriginal) {
+          string._original = translation;
+        } else if (locale != null) {
+          string[locale] = translation;
+        }
+      }
     }
 
     return ArbFile(
+      isOriginal: isOriginal,
       lastModified: lastModified,
       locale: locale,
-      messages: messages,
+      translations: translations,
     );
   }
 
@@ -99,14 +111,54 @@ class ArbFile {
       .then((contents) => ArbFile.fromContents(contents, file.path));
 }
 
-class ArbMessage extends TranslatedMessage {
-  final Map<String, MainMessage> _allMetadata;
+class ArbString {
+  final MainMessage _main;
+  final List<ArbTranslation> _originals = [];
+  final Map<String, ArbTranslation> _translations = {};
 
-  MainMessage _metadata;
+  ArbString(this._main);
 
-  ArbMessage(this._allMetadata, String name, Message translated)
-      : super(name, translated);
+  int get length => _translations.length;
 
-  MainMessage get metadata => _metadata ?? _allMetadata[id];
-  set metadata(MainMessage v) => _metadata = v;
+  Iterable<String> get locales => _translations.keys;
+
+  String get name => _main.name;
+
+  ArbTranslation get original => _originals.length == 1 ? _originals[0] : null;
+  set _original(ArbTranslation original) {
+    _originals.clear();
+    _originals.add(original);
+    original._translated.parent = _main;
+  }
+
+  Iterable<ArbTranslation> get translations => _translations.values;
+
+  ArbTranslation operator [](String locale) => _translations[locale];
+
+  operator []=(String locale, ArbTranslation translation) {
+    _translations[locale] = translation;
+    translation._translated.parent = _main;
+  }
+
+  @override
+  String toString() => _main.toString();
+}
+
+class ArbTranslation {
+  final String name;
+  final Message _translated;
+
+  final Map<String, ArbString> _strings;
+
+  ArbString _string;
+
+  ArbTranslation(this._strings, this.name, this._translated);
+
+  ArbString get string => _string ?? _strings[name];
+  set string(ArbString v) => _string = v;
+
+  String toCode() => _translated.toCode();
+
+  @override
+  String toString() => _translated.toString();
 }
