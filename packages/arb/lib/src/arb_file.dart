@@ -6,6 +6,8 @@ import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' show basenameWithoutExtension;
 
+import 'icu_form.dart';
+
 const _jsonDecoder = JsonCodec();
 final _pluralAndGenderParser = IcuParser().message;
 final _plainParser = IcuParser().nonIcuMessage;
@@ -18,7 +20,7 @@ class ArbFile {
   final List<ArbTranslation> translations;
 
   ArbFile({
-    this.isOriginal,
+    this.isOriginal = false,
     this.lastModified,
     this.locale,
     this.translations,
@@ -118,6 +120,8 @@ class ArbString {
 
   ArbString(this._main);
 
+  String get description => _main.description;
+
   int get length => _translations.length;
 
   Iterable<String> get locales => _translations.keys;
@@ -157,8 +161,6 @@ class ArbTranslation {
   ArbString get string => _string ?? _strings[name];
   set string(ArbString v) => _string = v;
 
-  String toCode() => _translated.toCode();
-
   @override
-  String toString() => _translated.toString();
+  String toString() => _translated.toIcuForm();
 }

@@ -97,11 +97,11 @@ Map<String, ArbString> _collectStringsFromFiles(Iterable<ArbFile> files) {
 String _guessLocaleDefault(List<ArbString> strings) {
   final counts = <String, int>{};
   for (final string in strings) {
-    final original = string.original?.toCode();
+    final original = string.original?.toString();
     if (original == null) continue;
 
     for (final locale in string.locales) {
-      final translation = string[locale].toCode();
+      final translation = string[locale].toString();
       if (translation == original) {
         if (counts.containsKey(locale)) {
           counts[locale] = counts[locale] + 1;

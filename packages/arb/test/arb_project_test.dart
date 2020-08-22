@@ -29,8 +29,8 @@ void main() {
 
       final string = arbProject['foo'];
       expect(string.length, equals(2));
-      expect(string['en'].toCode(), equals('bar'));
-      expect(string['vi'].toCode(), equals('barrrr'));
+      expect("${string['en']}", equals('bar'));
+      expect("${string['vi']}", equals('barrrr'));
     });
   });
 
@@ -43,105 +43,49 @@ void main() {
 
     final _expect = (String name, {String en, String vi}) {
       final string = arbProject[name];
-      expect(string.original.toCode(), equals(en));
-      expect(string['en'].toCode(), equals(en));
-      expect(string['vi'].toCode(), equals(vi));
+      expect('${string.original}', equals(en));
+      expect("${string['en']}", equals(en));
+      expect("${string['vi']}", equals(vi));
     };
 
     _expect('message', en: 'message', vi: 'nội dung');
 
-    _expect('messageWithArg', en: r'arg=${arg}', vi: r'tham số=${arg}');
+    _expect('messageWithArg', en: r'arg={arg}', vi: r'tham số={arg}');
 
     _expect(
       'gender',
-      en: r'${Intl.gender(gender, '
-          r"female: 'gender=female', "
-          r"male: 'gender=male', "
-          r"other: 'gender=other'"
-          ')}',
-      vi: r'${Intl.gender(gender, '
-          r"female: 'gender=nữ', "
-          r"male: 'gender=nam', "
-          r"other: 'gender=khác'"
-          ')}',
+      en: '{gender,select, female{gender=female}male{gender=male}other{gender=other}}',
+      vi: '{gender,select, female{gender=nữ}male{gender=nam}other{gender=khác}}',
     );
 
     _expect(
       'genderWithArg',
-      en: r'${Intl.gender(gender, '
-          r"female: 'gender=female arg=${arg}', "
-          r"male: 'gender=male arg=${arg}', "
-          r"other: 'gender=other arg=${arg}'"
-          ')}',
-      vi: r'${Intl.gender(gender, '
-          r"female: 'gender=nữ tham số=${arg}', "
-          r"male: 'gender=nam tham số=${arg}', "
-          r"other: 'gender=khác tham số=${arg}'"
-          ')}',
+      en: '{gender,select, female{gender=female arg={arg}}male{gender=male arg={arg}}other{gender=other arg={arg}}}',
+      vi: '{gender,select, female{gender=nữ tham số={arg}}male{gender=nam tham số={arg}}other{gender=khác tham số={arg}}}',
     );
 
     _expect(
       'plural',
-      en: r'${Intl.plural(n, '
-          r"zero: 'n=zero', "
-          r"one: 'n=one', "
-          r"two: 'n=two', "
-          r"few: 'n=few', "
-          r"many: 'n=many', "
-          r"other: 'n=other'"
-          ')}',
-      vi: r'${Intl.plural(n, '
-          r"zero: 'n=không', "
-          r"one: 'n=một', "
-          r"two: 'n=hai', "
-          r"few: 'n=một vài', "
-          r"many: 'n=nhiều', "
-          r"other: 'n=khác'"
-          ')}',
+      en: '{n,plural, =0{n=zero}=1{n=one}=2{n=two}few{n=few}many{n=many}other{n=other}}',
+      vi: '{n,plural, =0{n=không}=1{n=một}=2{n=hai}few{n=một vài}many{n=nhiều}other{n=khác}}',
     );
 
     _expect(
       'pluralWithArg',
-      en: r'${Intl.plural(n, '
-          r"zero: 'n=zero arg=${arg}', "
-          r"one: 'n=one arg=${arg}', "
-          r"two: 'n=two arg=${arg}', "
-          r"few: 'n=few arg=${arg}', "
-          r"many: 'n=many arg=${arg}', "
-          r"other: 'n=other arg=${arg}'"
-          ')}',
-      vi: r'${Intl.plural(n, '
-          r"zero: 'n=không tham số=${arg}', "
-          r"one: 'n=một tham số=${arg}', "
-          r"two: 'n=hai tham số=${arg}', "
-          r"few: 'n=một vài tham số=${arg}', "
-          r"many: 'n=nhiều tham số=${arg}', "
-          r"other: 'n=khác tham số=${arg}'"
-          ')}',
+      en: '{n,plural, =0{n=zero arg={arg}}=1{n=one arg={arg}}=2{n=two arg={arg}}few{n=few arg={arg}}many{n=many arg={arg}}other{n=other arg={arg}}}',
+      vi: '{n,plural, =0{n=không tham số={arg}}=1{n=một tham số={arg}}=2{n=hai tham số={arg}}few{n=một vài tham số={arg}}many{n=nhiều tham số={arg}}other{n=khác tham số={arg}}}',
     );
 
     _expect(
       'select',
-      en: r'${Intl.select(choice, {'
-          r"'foo': 'choice=foo', "
-          r"'bar': 'choice=bar', "
-          '})}',
-      vi: r'${Intl.select(choice, {'
-          r"'foo': 'chọn=foo', "
-          r"'bar': 'chọn=bar', "
-          '})}',
+      en: '{choice,select, foo{choice=foo}bar{choice=bar}}',
+      vi: '{choice,select, foo{chọn=foo}bar{chọn=bar}}',
     );
 
     _expect(
       'selectWithArg',
-      en: r'${Intl.select(choice, {'
-          r"'foo': 'choice=foo arg=${arg}', "
-          r"'bar': 'choice=bar arg=${arg}', "
-          '})}',
-      vi: r'${Intl.select(choice, {'
-          r"'foo': 'chọn=foo tham số=${arg}', "
-          r"'bar': 'chọn=bar tham số=${arg}', "
-          '})}',
+      en: '{choice,select, foo{choice=foo arg={arg}}bar{choice=bar arg={arg}}}',
+      vi: '{choice,select, foo{chọn=foo tham số={arg}}bar{chọn=bar tham số={arg}}}',
     );
   });
 }
