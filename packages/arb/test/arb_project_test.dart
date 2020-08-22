@@ -8,17 +8,13 @@ void main() {
   group('ArbProject', () {
     test('merges metadata', () {
       final enString = ArbString(MainMessage()..name = 'foo');
-      final enStrings = {enString.name: enString};
-      final enTranslation =
-          ArbTranslation(enStrings, enString.name, LiteralString('bar', null));
+      final enTranslation = ArbTranslation.fromIcuForm('bar');
       enString['en'] = enTranslation;
       final enFile = ArbFile(locale: 'en', translations: [enTranslation]);
       expect(enString.length, equals(1));
 
       final viString = ArbString(MainMessage()..name = 'foo');
-      final viStrings = {viString.name: viString};
-      final viTranslation = ArbTranslation(
-          viStrings, viString.name, LiteralString('barrrr', null));
+      final viTranslation = ArbTranslation.fromIcuForm('barrrr');
       viString['vi'] = viTranslation;
       final viFile = ArbFile(locale: 'vi', translations: [viTranslation]);
       expect(viString.length, equals(1));
@@ -27,7 +23,7 @@ void main() {
       expect(arbProject.files.length, equals(2));
       expect(arbProject.length, equals(1));
 
-      final string = arbProject.getString(byName: 'foo');
+      final string = arbProject.getString(atIndex: 0);
       expect(string.length, equals(2));
       expect("${string['en']}", equals('bar'));
       expect("${string['vi']}", equals('barrrr'));

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'arb_file.dart';
+import 'message.dart';
 
 class ArbProject {
   final Map<String, dynamic> errors;
@@ -82,11 +83,7 @@ Map<String, ArbString> _collectStringsFromFiles(Iterable<ArbFile> files) {
       if (string == null) continue;
 
       final fromMap = map.putIfAbsent(string.name, () => string);
-
-      if (fromMap != string) {
-        translation.string = fromMap;
-        fromMap[file.locale] = translation;
-      }
+      fromMap[file.locale] = translation;
     }
   }
 

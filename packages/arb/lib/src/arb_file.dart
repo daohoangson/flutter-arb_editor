@@ -1,15 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:intl_translation/src/icu_parser.dart';
 import 'package:intl_translation/src/intl_message.dart';
 import 'package:path/path.dart' show basenameWithoutExtension;
 
-import 'icu_form.dart';
+import 'internal/icu.dart';
+import 'message.dart';
 
 const _jsonDecoder = JsonCodec();
-final _pluralAndGenderParser = IcuParser().message;
-final _plainParser = IcuParser().nonIcuMessage;
 
 class ArbFile {
   final bool isOriginal;
@@ -31,7 +29,7 @@ class ArbFile {
     DateTime lastModified;
     String locale;
     final strings = <String, ArbString>{};
-    final translations = <ArbTranslation>[];
+    final translations = <String, ArbTranslation>{};
 
     for (final entry in data.entries) {
       switch (entry.key) {
@@ -47,6 +45,7 @@ class ArbFile {
           break;
         default:
           if (entry.key.startsWith('@')) {
+            // metadata
             if (entry.value is Map) {
               final main = MainMessage();
               main.arguments = [];
@@ -69,11 +68,8 @@ class ArbFile {
             }
           } else {
             // translation
-            Message parsed = _pluralAndGenderParser.parse(entry.value).value;
-            if (parsed is LiteralString && parsed.string.isEmpty) {
-              parsed = _plainParser.parse(entry.value).value;
-            }
-            translations.add(ArbTranslation(strings, entry.key, parsed));
+            final translated = fromIcuForm(entry.value);
+            translations[entry.key] = ArbTranslation(translated);
           }
       }
     }
@@ -87,14 +83,14 @@ class ArbFile {
       }
     }
 
-    for (final translation in translations) {
-      final string = translation.string;
-      if (string != null) {
-        if (isOriginal) {
-          string._original = translation;
-        } else if (locale != null) {
-          string[locale] = translation;
-        }
+    for (final translation in translations.entries) {
+      final string = strings[translation.key];
+      if (string == null) continue;
+
+      if (isOriginal) {
+        string.original = translation.value;
+      } else if (locale != null) {
+        string[locale] = translation.value;
       }
     }
 
@@ -102,63 +98,11 @@ class ArbFile {
       isOriginal: isOriginal,
       lastModified: lastModified,
       locale: locale,
-      translations: translations,
+      translations: translations.values.toList(growable: false),
     );
   }
 
   static Future<ArbFile> fromFile(File file) => file
       .readAsString()
       .then((contents) => ArbFile.fromContents(contents, file.path));
-}
-
-class ArbString {
-  final MainMessage _main;
-  final List<ArbTranslation> _originals = [];
-  final Map<String, ArbTranslation> _translations = {};
-
-  ArbString(this._main);
-
-  String get description => _main.description;
-
-  int get length => _translations.length;
-
-  Iterable<String> get locales => _translations.keys;
-
-  String get name => _main.name;
-
-  ArbTranslation get original => _originals.length == 1 ? _originals[0] : null;
-  set _original(ArbTranslation original) {
-    _originals.clear();
-    _originals.add(original);
-    original._translated.parent = _main;
-  }
-
-  Iterable<ArbTranslation> get translations => _translations.values;
-
-  ArbTranslation operator [](String locale) => _translations[locale];
-
-  operator []=(String locale, ArbTranslation translation) {
-    _translations[locale] = translation;
-    translation._translated.parent = _main;
-  }
-
-  @override
-  String toString() => _main.toString();
-}
-
-class ArbTranslation {
-  final String name;
-  final Message _translated;
-
-  final Map<String, ArbString> _strings;
-
-  ArbString _string;
-
-  ArbTranslation(this._strings, this.name, this._translated);
-
-  ArbString get string => _string ?? _strings[name];
-  set string(ArbString v) => _string = v;
-
-  @override
-  String toString() => _translated.toIcuForm();
 }

@@ -46,7 +46,6 @@ void main() {
         final arbFile = ArbFile.fromContents(contents);
         final translation = arbFile.translations.first;
 
-        expect(translation.name, equals('foo'));
         expect('$translation', equals('Bar'));
       });
 
@@ -63,7 +62,6 @@ void main() {
         final arbFile = ArbFile.fromContents(contents, 'intl_messages.arb');
         final translation = arbFile.translations.first;
 
-        expect(translation.name, equals('hello'));
         expect('$translation', equals('Hello {name}'));
       });
 
@@ -80,7 +78,6 @@ void main() {
         final arbFile = ArbFile.fromContents(contents, 'intl_messages.arb');
         final translation = arbFile.translations.first;
 
-        expect(translation.name, equals('apples'));
         expect('$translation',
             equals('{n,plural, =1{an apple}other{{n} apples}}'));
       });
@@ -91,7 +88,6 @@ void main() {
         final arbFile = ArbFile.fromContents(contents);
         final translation = arbFile.translations.first;
 
-        expect(translation.name, equals('fooOrBar'));
         expect('$translation',
             equals('{choice,select, foo{Foo is great!}bar{Bar is awesome!}}'));
       });
