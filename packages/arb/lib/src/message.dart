@@ -10,6 +10,10 @@ class ArbString {
 
   ArbString(this._main);
 
+  List<String> get arguments => _main.arguments;
+
+  Map<String, dynamic> get example => _main.examples;
+
   String get description => _main.description;
 
   int get length => _translations.length;
